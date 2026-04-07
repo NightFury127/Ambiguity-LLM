@@ -4,21 +4,27 @@ import sys
 
 app = FastAPI()
 
+
 @app.get("/")
-def run_inference():
+def root():
+    return {"message": "API is running"}
+
+
+@app.post("/reset")
+def reset():
     try:
         result = subprocess.run(
-            [sys.executable, "inference.py"],  # 🔥 IMPORTANT FIX
+            [sys.executable, "inference.py"],
             capture_output=True,
             text=True,
             timeout=60
         )
 
         return {
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "returncode": result.returncode
+            "output": result.stdout.strip()
         }
 
     except Exception as e:
-        return {"error": str(e)}
+        return {
+            "output": f"[ERROR] {str(e)}"
+        }
