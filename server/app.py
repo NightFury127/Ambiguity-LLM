@@ -1,7 +1,9 @@
 from fastapi import FastAPI
-import subprocess
-import sys
 import uvicorn
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 app = FastAPI()
 
@@ -12,13 +14,11 @@ def root():
 @app.post("/reset")
 def reset():
     try:
-        result = subprocess.run(
-            [sys.executable, "inference.py"],
-            capture_output=True,
-            text=True,
-            timeout=60
-        )
-        return {"output": result.stdout.strip()}
+        import importlib
+        import inference
+        importlib.reload(inference)  # reload so env vars are re-read each time
+        inference.main()
+        return {"output": "done"}
     except Exception as e:
         return {"output": f"Error: {str(e)}"}
 
