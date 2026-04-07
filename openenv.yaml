@@ -1,0 +1,5 @@
+name: ambiguity-env
+description: AI environment for resolving ambiguous instructions via clarification
+version: 1.0
+
+entrypoint: inference.py
