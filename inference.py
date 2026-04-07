@@ -1,4 +1,5 @@
 from env import AmbiguityEnv
+from tasks import get_random_task
 from openai import OpenAI
 import os
 import json
@@ -54,22 +55,33 @@ Return only valid JSON, no explanation."""
         return {"type": "execute", "content": "Complete task"}
 
 def main():
+    # Get a random task with grader
+    task = get_random_task()
+    
     env = AmbiguityEnv()
     obs = env.reset()
     rewards = []
-    log_start("ambiguity", "ambiguity-env", MODEL_NAME)
+    known_info = {}
+    
+    log_start(task["name"], "ambiguity-env", MODEL_NAME)
 
     for step in range(1, 7):
         action = get_action_from_llm(obs)
         obs, reward, done, _ = env.step(action)
+        
+        # Track known information from the action
+        if "content" in action:
+            known_info[f"step_{step}"] = action["content"]
+        
         rewards.append(reward)
         log_step(step, action, reward, done)
         if done:
             break
 
-    score = sum(rewards) / len(rewards)
+    # Use the grader to compute final score
+    final_score = task["grader"](task, known_info)
     success = done
-    log_end(success, step, score, rewards)
+    log_end(success, step, final_score, rewards)
 
 if __name__ == "__main__":
     main()
