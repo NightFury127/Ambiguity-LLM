@@ -3,8 +3,13 @@ from openai import OpenAI
 import os
 
 API_BASE_URL = os.getenv("API_BASE_URL")
-MODEL_NAME = os.getenv("MODEL_NAME")
-API_KEY = os.getenv("HF_TOKEN")  # ✅ FIXED
+MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
+API_KEY = os.getenv("API_KEY")  # ✅ CORRECT
+
+client = OpenAI(
+    base_url=API_BASE_URL,
+    api_key=API_KEY
+)
 
 client = OpenAI(
     base_url=API_BASE_URL,

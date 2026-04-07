@@ -4,11 +4,9 @@ import sys
 
 app = FastAPI()
 
-
 @app.get("/")
 def root():
     return {"message": "API is running"}
-
 
 @app.post("/reset")
 def reset():
@@ -19,12 +17,6 @@ def reset():
             text=True,
             timeout=60
         )
-
-        return {
-            "output": result.stdout.strip()
-        }
-
+        return {"output": result.stdout.strip()}
     except Exception as e:
-        return {
-            "output": f"[ERROR] {str(e)}"
-        }
+        return {"output": f"Error: {str(e)}"}
