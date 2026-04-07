@@ -1,0 +1,18 @@
+[project]
+name = "ambiguity-env"
+version = "1.0.0"
+description = "AI environment for resolving ambiguous instructions"
+requires-python = ">=3.10"
+dependencies = [
+    "openenv-core>=0.2.0",
+    "fastapi",
+    "uvicorn",
+    "openai",
+]
+
+[project.scripts]
+server = "server.app:app"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.backends.legacy:build"
