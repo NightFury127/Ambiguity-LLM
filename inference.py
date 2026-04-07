@@ -4,18 +4,12 @@ import os
 
 API_BASE_URL = os.getenv("API_BASE_URL")
 MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
-API_KEY = os.getenv("API_KEY")  # ✅ CORRECT
+API_KEY = os.getenv("API_KEY")
 
 client = OpenAI(
     base_url=API_BASE_URL,
     api_key=API_KEY
 )
-
-client = OpenAI(
-    base_url=API_BASE_URL,
-    api_key=API_KEY
-)
-
 
 def log_start(task, env, model):
     print(f"[START] task={task} env={env} model={model}")
