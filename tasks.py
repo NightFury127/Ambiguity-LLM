@@ -2,7 +2,9 @@ import random
 
 def grade(task, known_info):
     correct = sum(1 for f in task["required_fields"] if f in known_info)
-    return round(correct / len(task["required_fields"]), 2)
+    total = len(task["required_fields"])
+    raw = correct / total
+    return round(0.1 + raw * 0.8, 2)  # strictly between 0.1 and 0.9
 
 def get_tasks():
     return [

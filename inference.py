@@ -25,13 +25,10 @@ def log_end(success, steps, score, rewards):
 
 def get_action_from_llm(obs):
     prompt = f"""You are an AI agent resolving ambiguous tasks.
-
 Current observation: {json.dumps(obs)}
-
 You must return a JSON object with exactly this format:
 - If information is missing: {{"type": "ask", "content": "your question here"}}
 - If you have all info: {{"type": "execute", "content": "Complete task"}}
-
 Return only valid JSON, no explanation."""
 
     response = client.chat.completions.create(
@@ -40,13 +37,10 @@ Return only valid JSON, no explanation."""
         max_tokens=200,
         temperature=0.1
     )
-
     text = response.choices[0].message.content.strip()
-
     try:
         return json.loads(text)
     except:
-        # fallback if LLM returns bad JSON
         required = obs.get("required_fields", [])
         known = obs.get("known_info", {})
         missing = [f for f in required if f not in known]
@@ -55,33 +49,22 @@ Return only valid JSON, no explanation."""
         return {"type": "execute", "content": "Complete task"}
 
 def main():
-    # Get a random task with grader
-    task = get_random_task()
-    
     env = AmbiguityEnv()
     obs = env.reset()
     rewards = []
-    known_info = {}
-    
-    log_start(task["name"], "ambiguity-env", MODEL_NAME)
+
+    log_start(env.task["name"], "ambiguity-env", MODEL_NAME)
 
     for step in range(1, 7):
         action = get_action_from_llm(obs)
         obs, reward, done, _ = env.step(action)
-        
-        # Track known information from the action
-        if "content" in action:
-            known_info[f"step_{step}"] = action["content"]
-        
         rewards.append(reward)
         log_step(step, action, reward, done)
         if done:
             break
 
-    # Use the grader to compute final score
-    final_score = task["grader"](task, known_info)
-    success = done
-    log_end(success, step, final_score, rewards)
+    score = min(max(round(sum(rewards) / len(rewards), 2), 0.1), 0.9)
+    log_end(done, step, score, rewards)
 
 if __name__ == "__main__":
     main()

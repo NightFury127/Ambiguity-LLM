@@ -1,5 +1,4 @@
-from tasks import get_random_task
-
+from tasks import get_random_task, grade
 
 class AmbiguityEnv:
     def __init__(self):
@@ -13,7 +12,6 @@ class AmbiguityEnv:
         self.known_info = {}
         self.done = False
         self.history = []
-
         return {
             "instruction": self.task["instruction"],
             "known_info": self.known_info,
@@ -21,58 +19,37 @@ class AmbiguityEnv:
         }
 
     def step(self, action):
-        reward = 0
+        reward = 0.1
         done = False
-
-        # initialize history if not present
         if not hasattr(self, "history"):
             self.history = []
 
         if action["type"] == "ask":
             question = action["content"].lower()
             useful = False
-
-            # ❌ repetition penalty
             if question in self.history:
-                reward -= 0.2
-
+                reward = 0.1
             for field in self.task["required_fields"]:
                 field_text = field.replace("_", " ")
-
                 if (field in question or field_text in question) and field not in self.known_info:
                     self.known_info[field] = self.task["solution"][field]
-                    reward += 0.3
                     useful = True
-
-            # ❌ useless question penalty
-            if not useful:
-                reward -= 0.1
-
+            if useful:
+                reward = grade(self.task, self.known_info)
             self.history.append(question)
 
         elif action["type"] == "execute":
             done = True
+            reward = grade(self.task, self.known_info)
 
-            correct_fields = sum(
-                1 for f in self.task["required_fields"]
-                if f in self.known_info
-            )
-
-            completeness_score = correct_fields / len(self.task["required_fields"])
-
-            reward += completeness_score * 0.7
-
-            # ✅ bonus for full completion
-            if completeness_score == 1.0:
-                reward += 0.3
-            else:
-                reward -= 0.2  # ❌ penalty for incomplete execution
-
+        self.done = done
+        # clamp strictly between 0.1 and 0.9
+        reward = min(max(round(reward, 2), 0.1), 0.9)
         return {
             "instruction": self.task["instruction"],
             "known_info": self.known_info,
             "required_fields": self.task["required_fields"]
-        }, min(max(reward, 0), 1), done, {}
+        }, reward, done, {}
 
     def state(self):
         return {
