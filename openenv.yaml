@@ -1,5 +1,31 @@
 name: ambiguity-env
 description: AI environment for resolving ambiguous instructions via clarification
-version: 1.0
-
+version: "1.0"
 entrypoint: inference.py
+
+tasks:
+  - id: task_easy
+    name: Schedule Meeting
+    instruction: Schedule a meeting tomorrow
+    required_fields:
+      - time
+      - participants
+    grader: tasks.grade
+
+  - id: task_medium
+    name: Send Report
+    instruction: Send the report
+    required_fields:
+      - report_type
+      - recipient
+      - format
+    grader: tasks.grade
+
+  - id: task_hard
+    name: Plan Trip
+    instruction: Plan a trip
+    required_fields:
+      - destination
+      - dates
+      - budget
+    grader: tasks.grade

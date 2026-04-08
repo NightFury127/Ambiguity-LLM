@@ -11,12 +11,33 @@ app = FastAPI()
 def root():
     return {"message": "API is running"}
 
+@app.get("/health")
+def health():
+    return {"status": "healthy", "service": "ambiguity-env"}
+
+@app.get("/tasks")
+def get_tasks_endpoint():
+    from tasks import get_tasks
+    tasks = get_tasks()
+    return {
+        "tasks": [
+            {
+                "id": t["id"],
+                "name": t["name"],
+                "instruction": t["instruction"],
+                "required_fields": t["required_fields"],
+                "has_grader": True
+            }
+            for t in tasks
+        ]
+    }
+
 @app.post("/reset")
 def reset():
     try:
         import importlib
         import inference
-        importlib.reload(inference)  # reload so env vars are re-read each time
+        importlib.reload(inference)
         inference.main()
         return {"output": "done"}
     except Exception as e:
