@@ -1,5 +1,5 @@
 from env import AmbiguityEnv
-from tasks import get_random_task
+from tasks import get_tasks
 from openai import OpenAI
 import os
 import json
@@ -48,12 +48,21 @@ Return only valid JSON, no explanation."""
             return {"type": "ask", "content": "What is the " + ", ".join(missing) + "?"}
         return {"type": "execute", "content": "Complete task"}
 
-def main():
+def run_task(task_def):
     env = AmbiguityEnv()
-    obs = env.reset()
+    env.task = task_def
+    env.known_info = {}
+    env.done = False
+    env.history = []
+    
+    obs = {
+        "instruction": task_def["instruction"],
+        "known_info": env.known_info,
+        "required_fields": task_def["required_fields"]
+    }
+    
     rewards = []
-
-    log_start(env.task["name"], "ambiguity-env", MODEL_NAME)
+    log_start(task_def["name"], "ambiguity-env", MODEL_NAME)
 
     for step in range(1, 7):
         action = get_action_from_llm(obs)
@@ -65,6 +74,11 @@ def main():
 
     score = min(max(round(sum(rewards) / len(rewards), 2), 0.1), 0.9)
     log_end(done, step, score, rewards)
+
+def main():
+    all_tasks = get_tasks()
+    for task_def in all_tasks:
+        run_task(task_def)
 
 if __name__ == "__main__":
     main()
